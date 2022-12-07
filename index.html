@@ -25,11 +25,12 @@ body {
 }
 
 #scope_div, #control_panel {
-	width: calc(min(max-content, 45vw));
 	height: max-content;
 	max-height: 95vh;
 	margin: 5px;
 }
+#scope_div { width: 100%; }
+#control_panel { width: calc(min(max-content, 40vw)); }
 
 #XYscope {
 	display: block;
@@ -38,8 +39,6 @@ body {
 	max-height: 95vh;
 }
 
-#scope_div { width: 100%; }
-#control_panel { width: calc(min(max-content, 45vw)); }
 .control_mode { display: none; }
 
 button, input, select {
@@ -48,6 +47,26 @@ button, input, select {
 	border: solid #AAA 2px;
 	margin: 2px;
 	border-radius: 5px;
+}
+
+.fullscreen_block {
+	display: flex;
+	justify-content:center;
+	align-items:center;
+	background: black;
+	
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.option_line {
+	width: 100%;
+	white-space: nowrap;
 }
 </style>
 </head>
@@ -60,14 +79,17 @@ button, input, select {
 		<div id="control_panel">
 			<h1>XaudYo</h1>
 			<hr>
-			<button onclick="ac.resume(); this.remove();">CLICK TO START (Autoplay Blocked)</button>
+			<div class="fullscreen_block"> <button onclick="ac.resume(); this.parentElement.remove();">CLICK TO START (Autoplay Blocked)</button> </div>
+		
+			<span class="option_line"><label for="time_base">Sampling Time: </label><input type="range" min="8" value="13" max="15" step="1" onchange="time_base_text.innerText=aAnL.fftSize=aAnR.fftSize=Math.pow(2,this.value);" id="time_base"> <span id="time_base_text">8192</span></span>
 			<br>
-			<label for="time_base">Sampling Time: </label><input type="range" min="8" value="13" max="15" step="1" onchange="time_base_text.innerText=aAnL.fftSize=aAnR.fftSize=Math.pow(2,this.value);" id="time_base"> <span id="time_base_text">8192</span>
+			<span class="option_line"><label for="swap_channels">Swap Channels: </label> <input type="checkbox" id="swap_channels" onchange="swapLR(this.checked );"></span>
 			<br>
-			<label for="swap_channels">Swap Channels: </label> <input type="checkbox" id="swap_channels" onchange="swapLR(this.checked );">
+			<span class="option_line"><label for="phosphor_decay">Phosphor-like Decay: </label> <input type="checkbox" id="phosphor_decay" onchange="phosD = this.checked;"></span>
 			<br>
-			<label for="phosphor_decay">Phosphor-like Decay: </label> <input type="checkbox" id="phosphor_decay" onchange="phosD = this.checked;">
+			<span class="option_line"><label for="mute_out">Mute Output: </label> <input type="checkbox" id="mute_out" onchange="if (this.checked) aM.disconnect(ac.destination); else aM.connect(ac.destination);"></span>
 			<br>
+
 			<label for="input_mode">Mode: </label><select onchange="selSource();" id="input_mode" name="input_mode" type="select">
 				<option value="file">File</option>
 				<option value="mic">Mic</option>
@@ -76,9 +98,9 @@ button, input, select {
 			<br>
 			
 			<div class="control_mode" id="file_control">
-				<input type="file" onchange="fileSel(this);" id="file_sel"><br>
+				<input type="file" onchange="fileSel(this);" style="max-width: 20vw;" id="file_sel"><br>
 				<audio id="file_player" controls loop></audio><br>
-				<label for="file_speed">Speed: </label><input type="range" min="0.01" value="1" max="2" step="0.01" id="file_speed">
+				<!--<span class="option_line"><label for="file_speed">Speed: </label><input type="range" min="0.01" value="1" max="2" step="0.1" id="file_speed" onchange="file_speed_text.innerText = (file_player.playbackRate=this.value) + 'x';"> <span id="file_speed_text">1x</span><button onclick="file_speed.value=1">R</button></span>-->
 			</div>
 			
 			<div class="control_mode" id="mic_control">
@@ -186,6 +208,9 @@ function drawBuf() {
 	vc.fillStyle = 'black';
 	vc.fillRect(0,0,cnv.width,cnv.height);
 	
+	/*
+	 * TODO: Use sth like the buffer node to get full 16bit data instead of the shitty 8bit from the analyzers
+	 */
 	const bLen = Math.max(aAnL.frequencyBinCount, aAnR.frequencyBinCount);
 	let datL = new Uint8Array(bLen);
 	let datR = new Uint8Array(bLen);
@@ -206,7 +231,7 @@ function drawBuf() {
 		if (!phosD) vc.fillStyle = "rgb("+brght+","+brght+","+brght+")";
 		//if (phosD) vc.fillStyle = "rgba(255,255,255,"+mapfloat(i,0,bLen-1,0,1)+")";
 		vc.fillRect( //very horrible
-			mapfloat(datL[i],0,255,cnv.width,0),
+			mapfloat(datL[i],255,0,cnv.width,0),
 			mapfloat(datR[i],0,255,cnv.height,0),
 			cnv.width/256,
 			cnv.height/256
