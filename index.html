@@ -205,7 +205,7 @@ function swapLR(on) {
 }
 
 function drawBuf() {
-	vc.fillStyle = 'black';
+	vc.fillStyle = phosD ? 'rgba(0,0,0,0.25)' : 'black'; //alpha is too big of a performance hit, so it's behind the fake phosphor
 	vc.fillRect(0,0,cnv.width,cnv.height);
 	
 	/*
@@ -225,10 +225,10 @@ function drawBuf() {
 	 * Wait for next frame.
 	 */
 	
-	vc.fillStyle = 'rgb(255,255,255,0.5)'; //0.5 alpha is too big of a performance hit, so it's behind the fake phosphor
+	vc.fillStyle = 'rgba(255,255,255,0.25)';
 	for (let i=0; i<bLen; i++){
 		let brght = mapfloat(i,0,bLen-1,0,255);
-		if (!phosD) vc.fillStyle = "rgb("+brght+","+brght+","+brght+")";
+		if (!phosD) vc.fillStyle = "rgb("+brght+","+brght+","+brght+")"; //overwrite alpha stuff if not in phosD mode
 		//if (phosD) vc.fillStyle = "rgba(255,255,255,"+mapfloat(i,0,bLen-1,0,1)+")";
 		vc.fillRect( //very horrible
 			mapfloat(datL[i],255,0,cnv.width,0),
