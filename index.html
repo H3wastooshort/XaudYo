@@ -80,7 +80,10 @@ button, input, select {
 			<h1>XaudYo</h1>
 			<hr>
 			<div class="fullscreen_block"> <button onclick="ac.resume(); this.parentElement.remove();">CLICK TO START (Autoplay Blocked)</button> </div>
-		
+	
+			<span class="option_line">FPS: <span id="fps_counter">??</span></span>
+			<br>
+
 			<span class="option_line"><label for="time_base">Sampling Time: </label><input type="range" min="8" value="13" max="15" step="1" onchange="time_base_text.innerText=aAnL.fftSize=aAnR.fftSize=Math.pow(2,this.value);" id="time_base"> <span id="time_base_text">8192</span></span>
 			<br>
 			<span class="option_line"><label for="swap_channels">Swap Channels: </label> <input type="checkbox" id="swap_channels" onchange="swapLR(this.checked );"></span>
@@ -204,8 +207,9 @@ function swapLR(on) {
 	}
 }
 
+var frC = 0; //frame counter
 function drawBuf() {
-	vc.fillStyle = phosD ? 'rgba(0,0,0,0.25)' : 'black'; //alpha is too big of a performance hit, so it's behind the fake phosphor
+	vc.fillStyle = phosD ? 'rgba(0,0,0,0.1)' : 'black'; //alpha is too big of a performance hit, so it's behind the fake phosphor
 	vc.fillRect(0,0,cnv.width,cnv.height);
 	
 	/*
@@ -225,10 +229,10 @@ function drawBuf() {
 	 * Wait for next frame.
 	 */
 	
-	vc.fillStyle = 'rgba(255,255,255,0.25)';
+	vc.fillStyle = phosD ? 'rgba(255,255,255,0.25)' : 'white';
 	for (let i=0; i<bLen; i++){
-		let brght = mapfloat(i,0,bLen-1,0,255);
-		if (!phosD) vc.fillStyle = "rgb("+brght+","+brght+","+brght+")"; //overwrite alpha stuff if not in phosD mode
+		//let brght = mapfloat(i,0,bLen-1,0,255);
+		//if (!phosD) vc.fillStyle = "rgb("+brght+","+brght+","+brght+")"; //overwrite alpha stuff if not in phosD mode
 		//if (phosD) vc.fillStyle = "rgba(255,255,255,"+mapfloat(i,0,bLen-1,0,1)+")";
 		vc.fillRect( //very horrible
 			mapfloat(datL[i],255,0,cnv.width,0),
@@ -237,8 +241,14 @@ function drawBuf() {
 			cnv.height/256
 		);
 	}
+	frC++;
 	requestAnimationFrame(drawBuf);
 }
 drawBuf();
+
+setInterval(function(){
+	fps_counter.innerText=frC;
+	frC=0;
+},1000);
 	</script>
 </body>
