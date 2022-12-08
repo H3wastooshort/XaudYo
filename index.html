@@ -68,6 +68,11 @@ button, input, select {
 	width: 100%;
 	white-space: nowrap;
 }
+
+#start_button {
+	max-width: 90vw;
+	font-size: 3em;
+}
 </style>
 </head>
 <body>
@@ -79,15 +84,19 @@ button, input, select {
 		<div id="control_panel">
 			<h1>XaudYo</h1>
 			<hr>
-			<div class="fullscreen_block"> <button onclick="ac.resume(); this.parentElement.remove();">CLICK TO START (Autoplay Blocked)</button> </div>
+			<div class="fullscreen_block"> <button id="start_button" onclick="ac.resume(); this.parentElement.remove();">CLICK TO START (Autoplay Blocked)</button> </div>
 	
 			<span class="option_line">FPS: <span id="fps_counter">??</span></span>
 			<br>		
 			<span class="option_line"><label for="time_base">Sampling Time: </label><input type="range" min="8" value="13" max="15" step="1" onchange="time_base_text.innerText=aAnL.fftSize=aAnR.fftSize=Math.pow(2,this.value);" id="time_base" autocomplete="off"> <span id="time_base_text">8192</span></span>
 			<br>
+			<span class="option_line"><label for="audio_gain">Gain: </label><input type="range" min="0.1" value="1" max="4" step="0.1" onchange="audio_gain_text.innerText=aG.gain.value=this.value;" id="time_base" autocomplete="off"> <span id="audio_gain_text">1</span></span>
+			<br>
 			<span class="option_line"><label for="swap_channels">Swap Channels: </label> <input type="checkbox" id="swap_channels" onchange="swapLR(this.checked );" autocomplete="off"></span>
 			<br>
-			<span class="option_line"><label for="phosphor_decay">Phosphor-like Decay: </label> <input type="checkbox" id="phosphor_decay" onchange="phosD = this.checked;" autocomplete="off"></span>
+			<span class="option_line"><label for="phosphor_decay">Phosphor-like Decay: </label> <input type="checkbox" id="phosphor_decay" onchange="phosphor_decay_speed.disabled = !(phosD = this.checked);" autocomplete="off"></span>
+			<br>
+			<span class="option_line"><label for="phosphor_decay_speed">Phosphor Decay Speed: </label><input type="range" min="0.01" value="0.1" max="0.25" step="0.01" onchange="phosphor_decay_speed_text.innerText=phosDS=this.value;" id="phosphor_decay_speed" autocomplete="off" disabled> <span id="phosphor_decay_speed_text">0.1</span></span>
 			<br>
 			<span class="option_line"><label for="mute_out">Mute Output: </label> <input type="checkbox" id="mute_out" onchange="if (this.checked) aM.disconnect(ac.destination); else aM.connect(ac.destination);" autocomplete="off"></span>
 			<br>
@@ -129,10 +138,13 @@ resChange();
 window.addEventListener('resize', resChange);
 
 var phosD = false;
+var phosDS = 0.1; //phosphor decay speed
 
 //audio main
 const ac = new (window.AudioContext || window.webkitAudioContext)();
+const aG = ac.createGain();
 const aS = ac.createChannelSplitter(2); //split input and connect left and right analyzer
+aG.connect(aS);
 var aAnL = ac.createAnalyser();
 aAnL.fftSize=8192;
 aS.connect(aAnL,0);
@@ -160,10 +172,15 @@ function fileSel(e) {
 var aMi;
 function getMic() {
 	try {aMi.disconnect();} catch {}
-	navigator.mediaDevices.getUserMedia({audio:{echoCancellation: false}})
+	navigator.mediaDevices.getUserMedia({audio:{
+		echoCancellation: false,
+		autoGainControl: false,
+		noiseSuppression: false,
+		channelCount: 2
+	}})
 	.then((stream) => {
 			aMi = ac.createMediaStreamSource(stream);
-			aMi.connect(aS);
+			aMi.connect(aG);
 	})
 	.catch((err) => {
 		alert(err);
@@ -183,7 +200,7 @@ function selSource() {
 	switch (input_mode.value) {
 		case "file":
 			file_control.style.display="inline-block";
-			aPM.connect(aS);
+			aPM.connect(aG);
 			break;
 		case "mic":
 			mic_control.style.display="inline-block";
@@ -208,7 +225,7 @@ function swapLR(on) {
 
 var frC = 0; //frame counter
 function drawBuf() {
-	vc.fillStyle = phosD ? 'rgba(0,0,0,0.1)' : 'black'; //alpha is too big of a performance hit, so it's behind the fake phosphor
+	vc.fillStyle = phosD ? 'rgba(0,0,0,' + phosDS + ')' : 'black';
 	vc.fillRect(0,0,cnv.width,cnv.height);
 	
 	/*
@@ -228,11 +245,8 @@ function drawBuf() {
 	 * Wait for next frame.
 	 */
 	
-	vc.fillStyle = phosD ? 'rgba(255,255,255,0.25)' : 'white';
+	vc.fillStyle = phosD ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)';
 	for (let i=0; i<bLen; i++){
-		//let brght = mapfloat(i,0,bLen-1,0,255);
-		//if (!phosD) vc.fillStyle = "rgb("+brght+","+brght+","+brght+")"; //overwrite alpha stuff if not in phosD mode
-		//if (phosD) vc.fillStyle = "rgba(255,255,255,"+mapfloat(i,0,bLen-1,0,1)+")";
 		vc.fillRect( //very horrible
 			mapfloat(datL[i],255,0,cnv.width,0),
 			mapfloat(datR[i],0,255,cnv.height,0),
