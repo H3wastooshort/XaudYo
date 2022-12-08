@@ -82,18 +82,17 @@ button, input, select {
 			<div class="fullscreen_block"> <button onclick="ac.resume(); this.parentElement.remove();">CLICK TO START (Autoplay Blocked)</button> </div>
 	
 			<span class="option_line">FPS: <span id="fps_counter">??</span></span>
+			<br>		
+			<span class="option_line"><label for="time_base">Sampling Time: </label><input type="range" min="8" value="13" max="15" step="1" onchange="time_base_text.innerText=aAnL.fftSize=aAnR.fftSize=Math.pow(2,this.value);" id="time_base" autocomplete="off"> <span id="time_base_text">8192</span></span>
+			<br>
+			<span class="option_line"><label for="swap_channels">Swap Channels: </label> <input type="checkbox" id="swap_channels" onchange="swapLR(this.checked );" autocomplete="off"></span>
+			<br>
+			<span class="option_line"><label for="phosphor_decay">Phosphor-like Decay: </label> <input type="checkbox" id="phosphor_decay" onchange="phosD = this.checked;" autocomplete="off"></span>
+			<br>
+			<span class="option_line"><label for="mute_out">Mute Output: </label> <input type="checkbox" id="mute_out" onchange="if (this.checked) aM.disconnect(ac.destination); else aM.connect(ac.destination);" autocomplete="off"></span>
 			<br>
 
-			<span class="option_line"><label for="time_base">Sampling Time: </label><input type="range" min="8" value="13" max="15" step="1" onchange="time_base_text.innerText=aAnL.fftSize=aAnR.fftSize=Math.pow(2,this.value);" id="time_base"> <span id="time_base_text">8192</span></span>
-			<br>
-			<span class="option_line"><label for="swap_channels">Swap Channels: </label> <input type="checkbox" id="swap_channels" onchange="swapLR(this.checked );"></span>
-			<br>
-			<span class="option_line"><label for="phosphor_decay">Phosphor-like Decay: </label> <input type="checkbox" id="phosphor_decay" onchange="phosD = this.checked;"></span>
-			<br>
-			<span class="option_line"><label for="mute_out">Mute Output: </label> <input type="checkbox" id="mute_out" onchange="if (this.checked) aM.disconnect(ac.destination); else aM.connect(ac.destination);"></span>
-			<br>
-
-			<label for="input_mode">Mode: </label><select onchange="selSource();" id="input_mode" name="input_mode" type="select">
+			<label for="input_mode">Mode: </label><select onchange="selSource();" id="input_mode" name="input_mode" type="select" autocomplete="off">
 				<option value="file">File</option>
 				<option value="mic">Mic</option>
 				<option value="osc">Oscillators</option>
@@ -101,7 +100,7 @@ button, input, select {
 			<br>
 			
 			<div class="control_mode" id="file_control">
-				<input type="file" onchange="fileSel(this);" style="max-width: 20vw;" id="file_sel"><br>
+				<input type="file" onchange="fileSel(this);" style="max-width: 20vw;" id="file_sel" autocomplete="off"><br>
 				<audio id="file_player" controls loop></audio><br>
 				<!--<span class="option_line"><label for="file_speed">Speed: </label><input type="range" min="0.01" value="1" max="2" step="0.1" id="file_speed" onchange="file_speed_text.innerText = (file_player.playbackRate=this.value) + 'x';"> <span id="file_speed_text">1x</span><button onclick="file_speed.value=1">R</button></span>-->
 			</div>
