@@ -98,9 +98,15 @@ button, input, select {
 			<br>
 			<span class="option_line"><label for="phosphor_decay_speed">Phosphor Decay Speed: </label><input type="range" min="0.01" value="0.1" max="0.25" step="0.01" onchange="phosphor_decay_speed_text.innerText=phosDS=this.value;" id="phosphor_decay_speed" autocomplete="off" disabled> <span id="phosphor_decay_speed_text">0.1</span></span>
 			<br>
+			<label for="draw_scale">Scale: </label><select onchange="selSource();" id="draw_scale" name="draw_scale" type="select" autocomplete="off">
+				<option value="none">None</option>
+				<option value="grid">Grid</option>
+				<option value="cross">Cross</option>
+			</select>
+			<br>
+			<br>
 			<span class="option_line"><label for="mute_out">Mute Output: </label> <input type="checkbox" id="mute_out" onchange="if (this.checked) aM.disconnect(ac.destination); else aM.connect(ac.destination);" autocomplete="off"></span>
 			<br>
-
 			<label for="input_mode">Mode: </label><select onchange="selSource();" id="input_mode" name="input_mode" type="select" autocomplete="off">
 				<option value="file">File</option>
 				<option value="mic">Mic</option>
@@ -139,6 +145,7 @@ window.addEventListener('resize', resChange);
 
 var phosD = false;
 var phosDS = 0.1; //phosphor decay speed
+
 
 //audio main
 const ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -236,6 +243,25 @@ function drawBuf() {
 	let datR = new Uint8Array(bLen);
 	aAnL.getByteTimeDomainData(datL);
 	aAnR.getByteTimeDomainData(datR);
+	
+	vc.lineWidth = 1;
+	vc.strokeStyle = '#0AF';
+	if (draw_scale.value === "cross" | draw_scale.value === "both") {
+		vc.moveTo(0, cnv.height/2); //hor line
+		vc.lineTo(cnv.width, cnv.height/2);
+		vc.moveTo(cnv.width/2, 0);  //vert line
+		vc.lineTo(cnv.width/2, cnv.height);
+		vc.moveTo(0, 0); //x
+		vc.lineTo(cnv.width, cnv.height);
+		vc.moveTo(cnv.width, 0); //x
+		vc.lineTo(0, cnv.height);
+		vc.stroke();
+	}
+
+	vc.strokeStyle = '#FA0';
+	if (draw_scale.value === "grid" | draw_scale.value === "both") {
+
+	}
 	
 	/*
 	 * TODO: better drawing routine:
