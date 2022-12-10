@@ -85,13 +85,13 @@ button, input, select {
 		<div id="control_panel">
 			<h1>XaudYo</h1>
 			<hr>
-			<div class="fullscreen_block"> <button id="start_button" onclick="ac.resume(); this.parentElement.remove();">CLICK TO START (Autoplay Blocked)</button> </div>
+			<div class="fullscreen_block"> <button id="start_button" onclick="ac.resume(); this.parentElement.remove();">CLICK TO START</button> <noscript><br>JS Required</noscript></div>
 	
 			<span class="option_line">FPS: <span id="fps_counter">??</span></span>
 			<br>		
 			<span class="option_line"><label for="time_base">Sampling Time: </label><input type="range" min="8" value="13" max="15" step="1" onchange="time_base_text.innerText=aAnL.fftSize=aAnR.fftSize=Math.pow(2,this.value);" id="time_base" autocomplete="off"> <span id="time_base_text">8192</span></span>
 			<br>
-			<span class="option_line"><label for="audio_gain">Gain: </label><input type="range" min="0.1" value="1" max="4" step="0.1" onchange="audio_gain_text.innerText=aG.gain.value=this.value;" id="time_base" autocomplete="off"> <span id="audio_gain_text">1</span></span>
+			<span class="option_line"><label for="audio_gain">Gain: </label><input type="range" min="0.1" value="1" max="4" step="0.1" onchange="audio_gain_text.innerText=aG.gain.value=this.value;" id="audio_gain" autocomplete="off"> <span id="audio_gain_text">1</span></span>
 			<br>
 			<span class="option_line"><label for="swap_channels">Swap Channels: </label> <input type="checkbox" id="swap_channels" onchange="swapLR(this.checked );" autocomplete="off"></span>
 			<br>
@@ -106,7 +106,7 @@ button, input, select {
 			</select>
 			<br>
 			<br>
-			<span class="option_line"><label for="mute_out">Mute Output: </label> <input type="checkbox" id="mute_out" onchange="if (this.checked) aM.disconnect(ac.destination); else aM.connect(ac.destination);" autocomplete="off"></span>
+			<span class="option_line"><label for="playback_vol">Playback Volume: </label><input type="range" min="0.1" value="1" max="2" step="0.1" onchange="playback_vol_text.innerText=aG.gain.value=this.value;" id="playback_vol" autocomplete="off"> <span id="playback_vol_text">1</span></span>
 			<br>
 			<label for="input_mode">Mode: </label><select onchange="selSource();" id="input_mode" name="input_mode" type="select" autocomplete="off">
 				<option value="file">File</option>
@@ -152,6 +152,7 @@ var phosDS = 0.1; //phosphor decay speed
 const ac = new (window.AudioContext || window.webkitAudioContext)();
 const aG = ac.createGain();
 const aS = ac.createChannelSplitter(2); //split input and connect left and right analyzer
+const aGO = ac.createGain();
 aG.connect(aS);
 var aAnL = ac.createAnalyser();
 aAnL.fftSize=8192;
@@ -162,7 +163,8 @@ aS.connect(aAnR,1);
 const aM = ac.createChannelMerger(2); //merge back into output
 aAnL.connect(aM,0,0);
 aAnR.connect(aM,0,1);
-aM.connect(ac.destination);
+aM.connect(aGO);
+aGO.connect(ac.destination);
 
 //audio sources
 //file
@@ -275,8 +277,8 @@ function drawBuf() {
 	vc.fillStyle = phosD ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)';
 	for (let i=0; i<bLen; i++){
 		vc.fillRect( //very horrible
-			mapfloat(datL[i],255,0,cnv.width,0),
-			mapfloat(datR[i],0,255,cnv.height,0),
+			mapfloat(datL[i],255,0,cnv.width,0) - (cnv.width/256/2), //stuff at the end just centers the pixels
+			mapfloat(datR[i],0,255,cnv.height,0) - (cnv.height/256/2),
 			cnv.width/256,
 			cnv.height/256
 		);
