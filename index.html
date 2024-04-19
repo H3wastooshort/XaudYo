@@ -111,7 +111,7 @@ button, input, select {
 			<label for="input_mode">Mode: </label><select onchange="selSource();" id="input_mode" name="input_mode" type="select" autocomplete="off">
 				<option value="file">File</option>
 				<option value="mic">Mic</option>
-				<option value="osc">Oscillators</option>
+				<option value="desktop">Desktop</option>
 			</select>
 			<br>
 			
@@ -197,6 +197,24 @@ function getMic() {
 	});
 }
 
+function getDesktop() {
+	try {aMi.disconnect();} catch {}
+	navigator.mediaDevices.getDisplayMedia({audio:{
+		channelCount: 2,
+		echoCancellation: false,
+		autoGainControl: false,
+		noiseSuppression: false
+	}})
+	.then((stream) => {
+    	console.log(stream);
+			aMi = ac.createMediaStreamSource(stream);
+			aMi.connect(aG);
+	})
+	.catch((err) => {
+		alert(err+"\nNote that some browsers do not support audio capture from the desktop.");
+	});
+}
+
 //stuff
 function mapfloat(x, in_min, in_max, out_min, out_max) {//arduino style map()
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -215,6 +233,9 @@ function selSource() {
 		case "mic":
 			mic_control.style.display="inline-block";
 			getMic();
+			break;
+		case "desktop":
+			getDesktop();
 			break;
 	}
 }
