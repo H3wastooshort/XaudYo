@@ -181,6 +181,8 @@ function fileSel(e) {
 //mic
 var aMi;
 function getMic() {
+	playback_vol.value=0;
+	playback_vol.onchange();
 	try {aMi.disconnect();} catch {}
 	navigator.mediaDevices.getUserMedia({audio:{
 		echoCancellation: false,
@@ -198,6 +200,8 @@ function getMic() {
 }
 
 function getDesktop() {
+	playback_vol.value=0;
+	playback_vol.onchange();
 	try {aMi.disconnect();} catch {}
 	navigator.mediaDevices.getDisplayMedia({audio:{
 		channelCount: 2,
